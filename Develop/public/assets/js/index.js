@@ -1,3 +1,27 @@
+const express = require('express');
+const app = express();
+const fs = require('fs');
+
+app.use(express.static('public', { "extensions": ["html", "js"] }));
+
+app.get('/api/notes', (req, res) => {
+  // Read the contents of the db.json file
+  fs.readFile('db.json', 'utf8', (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+
+    const notes = JSON.parse(data);
+
+    res.json(notes);
+  });
+});
+
+app.get('/assets/*', (req, res) => {
+  res.sendFile(__dirname + '/public' + req.path);
+});
+
 let noteForm;
 let noteTitle;
 let noteText;
@@ -37,7 +61,7 @@ const getNotes = () =>
   });
 
 const saveNote = (note) =>
-  fetch('/api/notes', {
+  fetch('/api.html', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -192,3 +216,7 @@ if (window.location.pathname === '/notes') {
 }
 
 getAndRenderNotes();
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
