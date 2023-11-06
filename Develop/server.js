@@ -58,6 +58,28 @@ app.post('/api/notes', (req, res) => {
   }
 });
 
+app.delete('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+    const notes = JSON.parse(fs.readFileSync('./db/db.json', 'utf8'));
+    const noteIndex = notes.findIndex(note => note.id === noteId);
+  
+    if (noteIndex !== -1) {
+      const deletedNote = notes.splice(noteIndex, 1)[0];
+
+      fs.writeFileSync('./db/db.json', JSON.stringify(notes));
+  
+      const response = {
+        status: 'success',
+        message: 'Note deleted',
+        body: deletedNote,
+      };
+  
+      res.json(response);
+    } else {
+      res.json('Note not found');
+    }
+  });
+
 app.get('*', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
