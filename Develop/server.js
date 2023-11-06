@@ -1,22 +1,15 @@
 
 const express = require('express');
 const path = require('path');
-// const { clog } = require('./middleware/clog');
-// const api = require('./routes/index.js');
+const generateUniqueId = require('generate-unique-id');
 const fs = require('fs');
 
 const PORT = process.env.PORT || 3001;
-
 const app = express();
 
-// // Import custom middleware, "cLog"
-// app.use(clog);
 
-// Middleware for parsing JSON and urlencoded form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use('/api', api);
-
 app.use(express.static('public'));
 
 
@@ -41,8 +34,28 @@ app.get('/notes', (req, res) => {
   res.sendFile(__dirname + '/public/notes.html');
 });
 
+
 app.post('/api/notes', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  const { title, text } = req.body;
+
+  if (title && text) {
+    const newNote = {
+      title,
+      text,
+      id: generateUniqueId(),
+    };
+    const notes = JSON.parse(fs.readFileSync('./db/db.json', 'utf8'));
+    notes.push(newNote);
+    fs.writeFileSync('./db/db.json', JSON.stringify(notes));
+    const response = {
+      status: 'success',
+      body: newNote,
+    };
+
+    res.json(response);
+  } else {
+    res.json('Error in posting note');
+  }
 });
 
 app.get('*', (req, res) => {
